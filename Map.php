@@ -4,7 +4,7 @@ class Map {
     public $gridX;
     public $gridY;
 
-    function __constructor($gridX, $gridY) {
+    function __construct($gridX, $gridY) {
         $this->gridX = $gridX;
         $this->gridY = $gridY;
     }

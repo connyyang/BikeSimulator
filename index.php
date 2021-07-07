@@ -1,7 +1,10 @@
 <?php
 include 'Bike.php';
+include 'Map.php';
 
-$bike = new Bike('bike','123');
+// Set map as 7x7 in hardcode temporarily
+$map = new Map(7, 7);
+$bike = new Bike($map);
 
 while(1) {
     $op = readline('Enter your operation: ');
@@ -20,7 +23,7 @@ while(1) {
                 } else {
                     $locParams = array_map('trim', explode(',', $opParams[1]));
                     if (!empty($locParams) && count($locParams) == 3) {
-                        $bike->initPlace($locParams[0], $locParams[1], $locParams[2]);
+                        $bike->place($locParams[0], $locParams[1], $locParams[2]);
                     } else {
                         echo "ERROR 1002 : Invalid input! \n";
                     } 

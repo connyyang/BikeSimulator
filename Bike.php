@@ -1,59 +1,33 @@
 <?php
 include 'Direction.php';
+include 'Coordinate.php';
 
 Class Bike {
-    CONST CAR = "car";
-    CONST BIKE = "bike";
-    CONST MOTOBIKE = "motorbike";
-    CONST DIRECTIONS = ["NORTH", "EAST", "SOUTH", "WEST"]; //Based on clockwise.
 
-    public $type;
-    public $model;
-    public $x = 0;
-    public $y = 0;
-    public $gridX = 7;
-    public $gridY = 7;  
-    public $isStart = false;
-
-    function __constructor($type, $model) {
-        $this->type = $type;
-        $this->model = $model;
+    public $map;  
+    private $coordinate;
+    private $direction;
+    private $isPlaced = false;
+    
+    function __construct($map) {
+        $this->coordinate = new Coordinate();
+        $this->map = $map;
     }
 
-    function validateIsStart() {
+    function validateIsPlaced() {
         // Check if initial location has been placed or not
-        if (!$this->isStart) {
+        if (!$this->isPlaced) {
             echo "ERROR 2001: You need to set initial place location by setting PLACE. <i.e. PLACE 0,5,NORTH> \n";
             return;
             //return throw new Exception('You need to set initial place location by setting PLACE. <i.e. PLACE 0,5,NORTH>');
         }
-        return $this->isStart;
+        return $this->isPlaced;
     }
 
-    function validateLocation($x, $y, $gridX = "", $gridY = "") {
-        $gridX = $gridX !== "" ? $gridX : $this->gridX;
-        $gridY = $gridY !== "" ? $gridY : $this->gridY;
-
-        if ($x <0 || $x > ($gridX - 1) || $y <0 || $y > ($gridY - 1)) {
-           echo "ERROR 2002: Oops! Out of track! \n";
-           return false;
-           //return throw new Exception('Oops! Out of track!');
-        }
-
-        return true;
-    }
-
-    function initPlace($x, $y, $direction) {
-        // Check if initial location already been placed to prevent duplicate initilization.
-        if ($this->isStart) {
-            echo "ERROR 2003: You cannot place location multiple times! \n";
-            return;
-            //return throw new Exception('You cannot place location multiple times!');
-        }
-
+    function place($x, $y, $direction) {
         // validate x, y and direction
         if (empty($x) || !is_numeric($x) || empty($y) || !is_numeric($y) ||
-            empty($direction) || !in_array(strtoupper($direction), SELF::DIRECTIONS)) {
+            empty($direction) || !in_array(strtoupper($direction), Direction::DIRECTIONS)) {
                 echo "ERROR 1004: Invalid input for PLACE! <i.e. PLACE 0,5,NORTH> \n";
                 return;
                 //return throw new Exception('Invalid input for PLACE! <i.e. PLACE 0,5,NORTH>');
@@ -64,10 +38,10 @@ Class Bike {
         $y = intval($y);
 
         // validate x, y with gridX and gridY
-        if ($this->validateLocation($x, $y)) {
-            $this->isStart = true;
-            $this->x = $x;
-            $this->y = $y;
+        if ($this->map->validateLocation($x, $y)) {
+            $this->isPlaced = true;
+            $this->coordinate->setX($x);
+            $this->coordinate->setY($y);
             $this->direction = strtoupper($direction);   
         }
         
@@ -75,57 +49,47 @@ Class Bike {
 
     function turn($type) {
         // check if initial place location not set, return empty
-        if (!$this->validateIsStart()) return;
+        if (!$this->validateIsPlaced()) return;
 
-        Direction::
-
-        $currentPos = array_search($this->direction, SELF::DIRECTIONS);
-        // change direction based on clockwise or anticlockwise
-        switch($type) {
-            case "LEFT": 
-                $currentPos = $currentPos == 0 ? (count(SELF::DIRECTIONS) - 1): ($currentPos - 1);
-                break;
-            case "RIGHT": 
-                $currentPos = $currentPos == (count(SELF::DIRECTIONS) - 1) ? 0: ($currentPos + 1);
-                break;
-            default: 
-                break;
-        }
-        
-        $this->direction = SELF::DIRECTIONS[$currentPos];
+        $this->direction = Direction::getTurnedDirection($this->direction, $type);
     }
 
     function forward($direction="") {
         // check if initial place location not set, return empty
-        if (!$this->validateIsStart()) return;
+        if (!$this->validateIsPlaced()) return;
 
         $direction = $direction ? $direction : $this->direction;
+        $x = $this->coordinate->getX();
+        $y = $this->coordinate->getY();
 
         switch($direction) {
             case "NORTH": 
-                $this->y ++;
+                $y++;
                 break;
             case "SOUTH": 
-                $this->y --;
+                $y--;
                 break;
             case "EAST": 
-                $this->x ++;
+                $x++;
                 break;
             case "WEST": 
-                $this->x --;
+                $x--;
                 break;
         }
 
         // validate x, y with gridX and gridY
-        $this->validateLocation($this->x, $this->y);
+        if($this->map->validateLocation($x, $y)) {
+            $this->coordinate->setX($x);
+            $this->coordinate->setY($y);
+        }
     }
 
     function gpsReport($x = "", $y = "", $direction = "") {
         // check if initial place location not set, return empty
-        if (!$this->validateIsStart()) return;
+        if (!$this->validateIsPlaced()) return;
 
-        $x = $x !== "" ? $x : $this->x;
-        $y = $y !== "" ? $y : $this->y;
+        $x = $x !== "" ? $x : $this->coordinate->getX();
+        $y = $y !== "" ? $y : $this->coordinate->getY();
         $direction = $direction ? $direction : $this->direction;
         
         $msg = sprintf("(%d, %d), %s", $x, $y, $direction);
