@@ -26,7 +26,7 @@ Class Bike {
 
     function place($x, $y, $direction) {
         // validate x, y and direction
-        if (empty($x) || !is_numeric($x) || empty($y) || !is_numeric($y) ||
+        if ($x == "" || !is_numeric($x) || $y == "" || !is_numeric($y) ||
             empty($direction) || !in_array(strtoupper($direction), Direction::DIRECTIONS)) {
                 echo "ERROR 1004: Invalid input for PLACE! <i.e. PLACE 0,5,NORTH> \n";
                 return;
